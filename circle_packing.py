@@ -185,7 +185,7 @@ def draw(container, balls, ax):
 
 
 N = 10
-R = 3.813
+R = 4
 balls = initialize_balls(N, R, 1)
 container = container(R, balls)
 

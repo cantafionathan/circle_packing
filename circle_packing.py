@@ -1,9 +1,11 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import minimize
-
+from matplotlib.animation import FuncAnimation, PillowWriter
 
 # Plotting purposes
+
+frames = []
 
 def signed_distance(c, x, y, r=1):
     xy = np.stack([x, y], axis = -1)
@@ -21,16 +23,15 @@ def plot_ball(c, ax, x_range = 10, y_range = 10, r = 1):
 
 # plot list of balls
 def plot_balls(circles, R, ax):
+    ax.set_aspect('equal')
     ax.clear()
 
-    plot_ball(np.array([0,0]), ax, r=R)
+    plot_ball(np.array([0,0]), ax, r=R, x_range = R+1, y_range = R+1)
 
     for i in range(len(circles)):
-        plot_ball(circles[i], ax)
+        plot_ball(circles[i], ax, x_range = R+1, y_range = R+1)
 
-    ax.set_xlim(-R - 1, R + 1)
-    ax.set_ylim(-R - 1, R + 1)
-    ax.set_title(f'Radius: {R:.2f}')
+    ax.set_title(f'Radius: {R:.2f}, N: {len(circles):.2f}')
 
     plt.draw()
     plt.pause(0.01)
@@ -64,7 +65,8 @@ def pack_circles(N, animate = False):
     def callback(xk):
         circles = xk[:2 * N].reshape((N, 2))
         R = xk[-1]
-        plot_balls(circles, R, ax)
+        # plot_balls(circles, R, ax)
+        frames.append((circles, R))
 
     if animate:
         fig, ax = plt.subplots()
@@ -79,11 +81,22 @@ def pack_circles(N, animate = False):
         x_opt = result.x
         circles = x_opt[:2 * N].reshape((N, 2))
         R = x_opt[-1]
-        fig, ax = plt.subplots()
-        plot_balls(circles, R, ax)
-        plt.show()
+        if animate == False:
+            fig, ax = plt.subplots()
+            plot_balls(circles, R, ax)
+            plt.show()
         return circles, R
     else:
         raise ValueError("Optimization failed!")
 
-pack_circles(20, animate=False)
+pack_circles(10, animate=False)
+
+fig, ax = plt.subplots()
+
+def animate(i):
+    circles, R = frames[i]
+    plot_balls(circles, R, ax)
+
+# Create animation and save as GIF
+anim = FuncAnimation(fig, animate, frames=len(frames), interval=200)
+anim.save("circle_packing.gif", writer=PillowWriter(fps=5))

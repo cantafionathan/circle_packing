@@ -1,7 +1,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from random import uniform
-from time import sleep
+from matplotlib.animation import FuncAnimation, PillowWriter
+from copy import deepcopy
 
 # the algorithm moves two circles apart if they are touching, and does not move circles that are isolated
 # www.codeplastic.com/2017/09/09/controlled-circle-packing-with-processing
@@ -88,7 +89,7 @@ class container:
             diff = np.divide(diff, d) 
             force = np.add(force, diff)
             # adding some randomness seems to make it do a little bit better?
-            force = np.add(force, uniform(0,1)) 
+            force = np.add(force, np.array([uniform(-1,1), uniform(-1,1)])) 
         
         return force
 
@@ -173,39 +174,37 @@ def plot_ball(ball, ax, x_range = 5, y_range = 5):
     feature_x = np.arange(-x_range, x_range, 0.01)
     feature_y = np.arange(-y_range, y_range, 0.01)
     [X, Y] = np.meshgrid(feature_x, feature_y)
-    Z = [0] * len(X)
+    Z = np.zeros_like(X)
     for k in range(len(X)):
         Z[k] = signed_distance(ball, X[k], Y[k])
     ax.contour(X, Y, Z, levels=[0], colors = 'black')
 
 # draw each ball in list of N balls, and their containing ball
-def draw(container, balls, ax):
-    plot_ball(container, ax)
-    for i in range(N):
-        plot_ball(balls[i], ax)
-    plt.show()
-
+def draw(balls, R, ax):
+    ax.set_aspect('equal') 
+    ax.clear()
+    plot_ball(ball(0, 0, R), ax, x_range = R, y_range = R)
+    for i in range(len(balls)):
+        plot_ball(balls[i], ax, x_range = R, y_range = R)
 
 N = 10
 R = 4
-balls = initialize_balls(N, R, 1)
-container = container(R, balls)
-
-plt.ion()
-fig, ax = plt.subplots()
-fig.canvas.draw()
+balls = initialize_balls(N, R)
+con = container(R, balls)
+frames = []
 
 iter = 500
 for i in range(iter):
-    # generate new data to plot
-    container.iterate()
-    # remove previous data from plot
-    ax.clear()
-    # plot new data
-    draw(ball(0, 0 , R), container.balls, ax)
-    # re-render figure
-    fig.canvas.flush_events()
-    sleep(0.01)
-# keep final plot
-plt.ioff()
-plt.show()
+    container.iterate(con)
+    frames.append(deepcopy(con.balls))
+
+fig, ax = plt.subplots()
+
+def animate(i):
+    balls = frames[i]
+    draw(balls, R, ax)
+    ax.set_title(f'N: {N:.2f}, Radius: {R:.2f}, Iteration: {i:.2f}')
+
+# Create animation and save as GIF
+anim = FuncAnimation(fig, animate, frames=len(frames), interval=200)
+anim.save("bouncing.gif", writer=PillowWriter(fps=5))

@@ -187,7 +187,7 @@ def draw(balls, R, ax):
     for i in range(len(balls)):
         plot_ball(balls[i], ax, x_range = R, y_range = R)
 
-N = 10
+N = 9
 R = 4
 balls = initialize_balls(N, R)
 con = container(R, balls)

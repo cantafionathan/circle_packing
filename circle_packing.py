@@ -10,7 +10,7 @@ frames = []
 def signed_distance(c, x, y, r=1):
     xy = np.stack([x, y], axis = -1)
     # compute distance to ball using p-norm
-    return np.linalg.norm(c - xy, axis = -1) - r
+    return np.linalg.norm(c - xy, axis = -1, ord = 2) - r
 
 # plot a single ball
 def plot_ball(c, ax, x_range = 10, y_range = 10, r = 1):
@@ -70,10 +70,10 @@ def pack_circles(N, animate = False):
 
     if animate:
         fig, ax = plt.subplots()
-        plt.ion()  # Turn on interactive mode for live updating
+        # plt.ion()  # Turn on interactive mode for live updating
         result = minimize(objective, x0, constraints=constraints, method='SLSQP', callback=callback)
-        plt.ioff()  # Turn off interactive mode
-        plt.show()  # Display the final plot
+        # plt.ioff()  # Turn off interactive mode
+        # plt.show()  # Display the final plot
     else:
         result = minimize(objective, x0, constraints=constraints, method='SLSQP')
 
@@ -89,7 +89,7 @@ def pack_circles(N, animate = False):
     else:
         raise ValueError("Optimization failed!")
 
-pack_circles(10, animate=False)
+pack_circles(10, animate=True)
 
 fig, ax = plt.subplots()
 
@@ -99,4 +99,5 @@ def animate(i):
 
 # Create animation and save as GIF
 anim = FuncAnimation(fig, animate, frames=len(frames), interval=200)
+#plt.show()
 anim.save("circle_packing.gif", writer=PillowWriter(fps=5))

@@ -37,7 +37,7 @@ def plot_balls(circles, R, ax):
     plt.pause(0.01)
 
 # pack N unit balls in the smallest possible containing ball
-def pack_circles(N, animate = False):
+def pack_circles(N):
     x0 = np.zeros(2*N + 1)
     R0 = N/2
     x0[-1] = R0
@@ -65,31 +65,20 @@ def pack_circles(N, animate = False):
     def callback(xk):
         circles = xk[:2 * N].reshape((N, 2))
         R = xk[-1]
-        # plot_balls(circles, R, ax)
         frames.append((circles, R))
 
-    if animate:
-        fig, ax = plt.subplots()
-        # plt.ion()  # Turn on interactive mode for live updating
-        result = minimize(objective, x0, constraints=constraints, method='SLSQP', callback=callback)
-        # plt.ioff()  # Turn off interactive mode
-        # plt.show()  # Display the final plot
-    else:
-        result = minimize(objective, x0, constraints=constraints, method='SLSQP')
+    result = minimize(objective, x0, constraints=constraints, method='SLSQP', callback=callback)
 
     if result.success:
         x_opt = result.x
         circles = x_opt[:2 * N].reshape((N, 2))
         R = x_opt[-1]
-        if animate == False:
-            fig, ax = plt.subplots()
-            plot_balls(circles, R, ax)
-            plt.show()
+        print(R)
         return circles, R
     else:
         raise ValueError("Optimization failed!")
 
-pack_circles(10, animate=True)
+pack_circles(5)
 
 fig, ax = plt.subplots()
 
